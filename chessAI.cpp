@@ -10,13 +10,13 @@ ChessAI::ChessAI(string endpointUrl) {
 	gameBoard = egm->getGameBoard();
 	color = egm->getColor();
 
-	gameBoard[7][0] = '\0';
-	gameBoard[5][5] = 'R';
+	gameBoard[3][4] = 'Q';
 	checkPieces();
-	vector<gameMove> gm = generateRookMoves(myPieces[0]);
+	vector<gameMove> gm = generateQueenMoves(myPieces[0]);
 	cout << gm.size() << endl;
 	cout << gm[0].x2 << " " << gm[0].y2 << endl;
 	for (int i = 0; i < gm.size(); i++) {
+		cout << gm[i].value << endl;
 		makeMove(gm[i]);
 	}
 }
@@ -165,14 +165,18 @@ vector<gameMove> ChessAI::generateBishopMoves(piece bishop) {
 	vector<gameMove> moves;
 	int oldX = bishop.x;
 	int oldY = bishop.y;
+	
 
 	for (int i = 0; i < 4; i++) {
+		bool done = false;
 		int offsetX = i % 2 ? 1 : -1;
 		int offsetY = i > 1 ? 1 : -1;
 
 		int newX = oldX + offsetX;
 		int newY = oldY + offsetY;
-		while (!isBlocked(newX, newY) && !outOfBounds(newX, newY)) {
+		while (!isBlocked(newX, newY) && !outOfBounds(newX, newY) && !done) {
+			if (gameBoard[newX][newY] != '\0')
+				done = true;
 			double value = valueGained(gameBoard[newX][newY]);
 			moves.push_back(gameMove(oldX, oldY, newX, newY, bishop.pieceType, value));
 			newX += offsetX;
@@ -188,6 +192,7 @@ vector<gameMove> ChessAI::generateRookMoves(piece rook) {
 	int oldY = rook.y;
 
 	for (int i = 0; i < 4; i++) {
+		bool done = false;
 		int offset = i % 2 ? 1 : -1;
 
 		int newX = oldX;
@@ -199,7 +204,9 @@ vector<gameMove> ChessAI::generateRookMoves(piece rook) {
 			newY += offset;
 		}
 
-		while (!isBlocked(newX, newY) && !outOfBounds(newX, newY)) {
+		while (!isBlocked(newX, newY) && !outOfBounds(newX, newY) && !done) {
+			if (gameBoard[newX][newY] != '\0')
+				done = true;
 			double value = valueGained(gameBoard[newX][newY]);
 			moves.push_back(gameMove(oldX, oldY, newX, newY, rook.pieceType, value));
 			if (i < 2) {
@@ -212,6 +219,16 @@ vector<gameMove> ChessAI::generateRookMoves(piece rook) {
 	}
 	return moves;
 }
+
+vector<gameMove> ChessAI::generateQueenMoves(piece queen) {
+	vector<gameMove> bishopMoves = generateBishopMoves(queen);
+	vector<gameMove> rookMoves = generateRookMoves(queen);
+	bishopMoves.insert( bishopMoves.end(), rookMoves.begin(), rookMoves.end());
+
+	return bishopMoves;
+}
+
+
 
 void ChessAI::makeMove(gameMove m) {
 	gameBoard[m.x1][m.y1] = '\0';
@@ -264,5 +281,13 @@ std::array<std::array<char, 8>, 8> ChessAI::getGameBoard(){
 
 
 int main() {
+	// string url;
+ //  	cout << "Please Specify the url of the chess engine: ";
+ // 	cin >> url;
+
+ // 	int option = 0;
+ // 	cout << "Please choose an option, press 1 to create a game or 2 to join an existing game: ";
+ // 	cin >> option;
+
 	ChessAI cai = ChessAI("http://localhost:3000/");
 }
