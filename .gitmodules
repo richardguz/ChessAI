@@ -1,0 +1,3 @@
+[submodule "chessEngine"]
+	path = chessEngine
+	url = https://github.com/mnotti/chessEngine.git

@@ -1,2 +1,5 @@
-all: EngineMediator.cpp EngineMediator.h
-	g++ -std=c++11 -o EngineTest EngineMediator.cpp -L/usr/local/lib -lcurl -lcurlpp -I/usr/local/include
+all:
+	g++ -std=c++11 -o ChessAI chessAI.cpp EngineMediator.cpp Utils.cpp -L/usr/local/lib -lcurl -lcurlpp -I/usr/local/include
+
+clean: 
+	rm ChessAI
