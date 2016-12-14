@@ -7,21 +7,24 @@
 class EngineMediator {
 
 public:
-	EngineMediator(std::baseUrl);
+	EngineMediator(std::string baseUrl);
 
 	std::array<std::array<char, 8>, 8> getGameBoard();
+	std::array<std::array<char, 8>, 8> parseGameBoard(std::string response);
 	void joingame(int gameId);
-	void createGame()
+	void createGame();
 
 	void sendMove(std::string move);
 
 private:
-	std::string url;
-	std::string gameId;
+	std::string baseUrl;
 	std::string getStateUrl;
-	std::string postUrl;
+	std::string postMoveUrl;
 	std::string color;
 	std::string token;
+
+	int gameId;
+	bool turn;
 	std::array<std::array<char, 8>, 8> gameboard;
 };
 

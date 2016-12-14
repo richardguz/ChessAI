@@ -14,56 +14,78 @@ size_t write_to_string(void *ptr, size_t size, size_t count, void *stream) {
   return size*count;
 }
 
-EngineMediator::EngineMediator(string getUrl, string postUrl): getUrl(getUrl), postUrl(postUrl) {}
-
-array<array<char, 8>, 8> EngineMediator::getGameBoard() {
-	array<array<char, 8>, 8> gameboard;
+string makeHTTPRequest(const char* requestUrl, string type, const char* fields){
 	CURL *curl;
 	CURLcode res;
 
 	curl = curl_easy_init();
+	string response;
 
 	if(curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:3000/games/1/state");
+		curl_easy_setopt(curl, CURLOPT_URL, requestUrl);
+		if (type == "POST") {
+			curl_easy_setopt(curl, CURLOPT_POST, 1);
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, fields);
+		}
 
-		string response;
+		
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_to_string);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 		res = curl_easy_perform(curl);
 		curl_easy_cleanup(curl);
-
-		json board = json::parse(response)["board"];
-		for (int i = 0; i < 8; i++){
-			array<char, 8> row;
-			for (int j = 0; j < 8; j++){
-				string s =  board[i][j];
-				row[j] = s[0];
-			}
-			gameboard[i] = row;
-		}
-		cout << response << endl;
 	}
+	return response;
+}
+
+EngineMediator::EngineMediator(string baseUrl): baseUrl(baseUrl) {}
+
+void EngineMediator::createGame(){
+	string url = baseUrl + "games/new";
+	string response = "";
+	response = makeHTTPRequest(url.c_str(), "POST", "");
+
+	json game = json::parse(response);
+	int id = game["id"];
+	this->gameId = id;
+	this->token = game["token"];
+	this->turn = game["turn"];
+	this->gameboard = parseGameBoard(response);
+	this->getStateUrl = baseUrl + "games/" + to_string(id) + "/state";
+	this->postMoveUrl = baseUrl + "games/" + to_string(id) + "/move";
+}
+
+array<array<char, 8>, 8> EngineMediator::parseGameBoard(string response) {
+	array<array<char, 8>, 8> gameboard;
+	json board = json::parse(response)["board"];
+	for (int i = 0; i < 8; i++){
+		array<char, 8> row;
+		for (int j = 0; j < 8; j++){
+			string s =  board[i][j];
+			row[j] = s[0];
+		}
+		gameboard[i] = row;
+	}
+	return gameboard;
+}	
+
+
+
+array<array<char, 8>, 8> EngineMediator::getGameBoard() {
+	array<array<char, 8>, 8> gameboard;
+	string response = makeHTTPRequest(getStateUrl.c_str(), "GET", "");
+	gameboard = parseGameBoard(response);
+	this->gameboard = gameboard;
 	return gameboard;
 
 }
 
 void EngineMediator::sendMove(string move) {
-	CURL *curl;
-	CURLcode res;
-
-	curl = curl_easy_init();
-
-	if(curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:3000/games/new");
-		curl_easy_setopt(curl, CURLOPT_POST, 1);
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "{e2e4}");
-
-		string response;
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_to_string);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-		res = curl_easy_perform(curl);
-		curl_easy_cleanup(curl);
-	}
+	json postData;
+	postData["token"] = this->token;
+	postData["to"] = {5, 1};
+	postData["from"] = {6, 1};
+	string sPostData = postData.dump();
+	string response = makeHTTPRequest(this->postMoveUrl.c_str(), "POST", sPostData.c_str());
 }
 
 void printGameboard(array<array<char, 8>, 8> gameBoard) {
@@ -77,8 +99,9 @@ void printGameboard(array<array<char, 8>, 8> gameBoard) {
 
 int main(int, char **)
 {
-	EngineMediator egm = EngineMediator("http://localhost:3000/games/1/state", "http://localhost:3000/games/1/");
+	EngineMediator egm = EngineMediator("http://localhost:3000/");
+	egm.createGame();
 	array<array<char, 8>, 8> gameboard = egm.getGameBoard();
-	egm.sendMove("e4e5");
 	printGameboard(gameboard);
+	egm.sendMove("f");
 }
