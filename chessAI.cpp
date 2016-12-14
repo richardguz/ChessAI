@@ -10,10 +10,10 @@ ChessAI::ChessAI(string endpointUrl) {
 	gameBoard = egm->getGameBoard();
 	color = egm->getColor();
 
+	gameBoard[7][0] = '\0';
+	gameBoard[5][5] = 'R';
 	checkPieces();
-	makeMove(generatePawnMoves(myPieces[3])[0]);
-	makeMove(generatePawnMoves(myPieces[1])[0]);
-	vector<gameMove> gm = generateBishopMoves(myPieces[10]);
+	vector<gameMove> gm = generateRookMoves(myPieces[0]);
 	cout << gm.size() << endl;
 	cout << gm[0].x2 << " " << gm[0].y2 << endl;
 	for (int i = 0; i < gm.size(); i++) {
@@ -162,7 +162,6 @@ vector<gameMove> ChessAI::generateKnightMoves(piece knight) {
 }
 
 vector<gameMove> ChessAI::generateBishopMoves(piece bishop) {
-	vector<gameMove> tempMoves;
 	vector<gameMove> moves;
 	int oldX = bishop.x;
 	int oldY = bishop.y;
@@ -183,8 +182,38 @@ vector<gameMove> ChessAI::generateBishopMoves(piece bishop) {
 	return moves;
 }
 
+vector<gameMove> ChessAI::generateRookMoves(piece rook) {
+	vector<gameMove> moves;
+	int oldX = rook.x;
+	int oldY = rook.y;
+
+	for (int i = 0; i < 4; i++) {
+		int offset = i % 2 ? 1 : -1;
+
+		int newX = oldX;
+		int newY = oldY;
+		if (i < 2) {
+			newX += offset;
+		}
+		else {
+			newY += offset;
+		}
+
+		while (!isBlocked(newX, newY) && !outOfBounds(newX, newY)) {
+			double value = valueGained(gameBoard[newX][newY]);
+			moves.push_back(gameMove(oldX, oldY, newX, newY, rook.pieceType, value));
+			if (i < 2) {
+			newX += offset;
+			}
+			else {
+				newY += offset;
+			}
+		}
+	}
+	return moves;
+}
+
 void ChessAI::makeMove(gameMove m) {
-	printGameboard(gameBoard);
 	gameBoard[m.x1][m.y1] = '\0';
 	gameBoard[m.x2][m.y2] = m.pieceType;
 	printGameboard(gameBoard);
@@ -193,8 +222,8 @@ void ChessAI::makeMove(gameMove m) {
 // 	vector<array<array<int, 8>, 8>> newGameBoards;
 // 	int x = position.x;
 // 	int y = position.y;
-// 	int newx = x;
-// 	int newy = y;
+// 	int newX = x;
+// 	int newY = y;
 // 	for (int i = 0; i < 2; i++){
 // 		for (int j = 0; j < 2; j++){
 // 			int changeX = 1;

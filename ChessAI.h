@@ -15,6 +15,7 @@ public:
 	std::vector<gameMove> generatePawnMoves(piece pawn);
 	std::vector<gameMove> generateBishopMoves(piece bishop);
 	std::vector<gameMove> generateKnightMoves(piece knight);
+	std::vector<gameMove> generateRookMoves(piece rook);
 	// std::vector<move> generateQueenMoves(piece queen);
 	// std::vector<move> generateKingMoves(piece king);
 	bool isValidPawnMove(gameMove m);
