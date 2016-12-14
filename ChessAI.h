@@ -13,7 +13,7 @@ public:
 	ChessAI(std::string endpointUrl);
 	std::array<std::array<char, 8>, 8> getGameBoard();
 	std::vector<gameMove> generatePawnMoves(piece pawn);
-	std::vector<move> generateBishopMoves(piece bishop);
+	std::vector<gameMove> generateBishopMoves(piece bishop);
 	std::vector<gameMove> generateKnightMoves(piece knight);
 	// std::vector<move> generateQueenMoves(piece queen);
 	// std::vector<move> generateKingMoves(piece king);

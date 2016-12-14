@@ -11,10 +11,14 @@ ChessAI::ChessAI(string endpointUrl) {
 	color = egm->getColor();
 
 	checkPieces();
-	vector<gameMove> gm = generateKnightMoves(myPieces[9]);
+	makeMove(generatePawnMoves(myPieces[3])[0]);
+	makeMove(generatePawnMoves(myPieces[1])[0]);
+	vector<gameMove> gm = generateBishopMoves(myPieces[10]);
 	cout << gm.size() << endl;
 	cout << gm[0].x2 << " " << gm[0].y2 << endl;
-	makeMove(gm[1]);
+	for (int i = 0; i < gm.size(); i++) {
+		makeMove(gm[i]);
+	}
 }
 
 void ChessAI::checkPieces() {
@@ -109,7 +113,7 @@ vector<gameMove> ChessAI::generatePawnMoves(piece pawn) {
 		newX = oldX - 2;
 		newY = oldY;
 		double value = valueGained(gameBoard[newX][newY]);
-		gameMove m = gameMove(oldX, oldY, newX, newY, 'P', value);
+		gameMove m = gameMove(oldX, oldY, newX, newY, pawn.pieceType, value);
 		if (isValidPawnMove(m)) {
 			moves.push_back(m);
 		}
@@ -119,7 +123,7 @@ vector<gameMove> ChessAI::generatePawnMoves(piece pawn) {
 	newY = oldY;
 	cout << newX << newY << endl;
 	double value = valueGained(gameBoard[newX][newY]);
-	gameMove m = gameMove(oldX, oldY, newX, newY, 'P', value);
+	gameMove m = gameMove(oldX, oldY, newX, newY, pawn.pieceType, value);
 	if (isValidPawnMove(m)) {
 		moves.push_back(m);
 	}
@@ -140,12 +144,12 @@ vector<gameMove> ChessAI::generateKnightMoves(piece knight) {
 			int newX1 = oldX + offsetX * 1;
 			int newY1 = oldY + offsetY * 2;
 			double value1 = valueGained(gameBoard[newX1][newY1]);
-			tempMoves.push_back(gameMove(oldX, oldY, newX1, newY1, 'k', value1));
+			tempMoves.push_back(gameMove(oldX, oldY, newX1, newY1, knight.pieceType, value1));
 
 			int newX2 = oldX + offsetX * 2;
 			int newY2 = oldY + offsetY * 1;
 			double value2 = valueGained(gameBoard[newX2][newY2]);
-			tempMoves.push_back(gameMove(oldX, oldY, newX2, newY2, 'k', value2));
+			tempMoves.push_back(gameMove(oldX, oldY, newX2, newY2, knight.pieceType, value2));
 	}
 
 	for (int i = 0; i < 8; i++) {
@@ -154,6 +158,28 @@ vector<gameMove> ChessAI::generateKnightMoves(piece knight) {
 			moves.push_back(m);
 	}
 
+	return moves;
+}
+
+vector<gameMove> ChessAI::generateBishopMoves(piece bishop) {
+	vector<gameMove> tempMoves;
+	vector<gameMove> moves;
+	int oldX = bishop.x;
+	int oldY = bishop.y;
+
+	for (int i = 0; i < 4; i++) {
+		int offsetX = i % 2 ? 1 : -1;
+		int offsetY = i > 1 ? 1 : -1;
+
+		int newX = oldX + offsetX;
+		int newY = oldY + offsetY;
+		while (!isBlocked(newX, newY) && !outOfBounds(newX, newY)) {
+			double value = valueGained(gameBoard[newX][newY]);
+			moves.push_back(gameMove(oldX, oldY, newX, newY, bishop.pieceType, value));
+			newX += offsetX;
+			newY += offsetY;
+		}
+	}
 	return moves;
 }
 
