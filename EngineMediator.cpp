@@ -11,7 +11,7 @@ using namespace std;
 
 EngineMediator::EngineMediator(string baseUrl): baseUrl(baseUrl) {}
 
-void EngineMediator::createGame(){
+void EngineMediator::createGame() {
 	string url = baseUrl + "games/new";
 	string response = "";
 	response = makeHTTPRequest(url.c_str(), "POST", "");
@@ -21,9 +21,24 @@ void EngineMediator::createGame(){
 	this->gameId = id;
 	this->token = game["token"];
 	this->turn = game["turn"];
+	this->color = "white";
 	this->gameboard = parseGameBoard(response);
 	this->getStateUrl = baseUrl + "games/" + to_string(id) + "/state";
 	this->postMoveUrl = baseUrl + "games/" + to_string(id) + "/move";
+}
+
+void EngineMediator::joinGame(int gameId) {
+	string url = baseUrl + "games/" + to_string(gameId) + "/join";
+	string response = "";
+	response = makeHTTPRequest(url.c_str(), "POST", "");
+	json game = json::parse(response);
+	this->gameId = gameId;
+	this->token = game["token"];
+	this->turn = game["turn"];
+	this->color = "black";
+	this->gameboard = parseGameBoard(response);
+	this->getStateUrl = baseUrl + "games/" + to_string(gameId) + "/state";
+	this->postMoveUrl = baseUrl + "games/" + to_string(gameId) + "/move";
 }
 
 array<array<char, 8>, 8> EngineMediator::parseGameBoard(string response) {
@@ -57,12 +72,6 @@ void EngineMediator::sendMove(string move) {
 	string response = makeHTTPRequest(this->postMoveUrl.c_str(), "POST", sPostData.c_str());
 }
 
-
-/*int main(int, char **)
-{
-	EngineMediator egm = EngineMediator("http://localhost:3000/");
-	egm.createGame();
-	array<array<char, 8>, 8> gameboard = egm.getGameBoard();
-	printGameboard(gameboard);
-	egm.sendMove("f");
-}*/
+string EngineMediator::getColor(){
+	return color;
+}

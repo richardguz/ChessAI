@@ -1,13 +1,19 @@
 #include <curl/curl.h>
 #include "Utils.h"
 
-void printGameboard(std::array<std::array<int, 8>, 8> gameBoard) {
+void printGameboard(std::array<std::array<char, 8>, 8> gameBoard) {
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			std::cout << gameBoard[i][j] << " ";
+			if (gameBoard[i][j] =='\0') {
+				std::cout << '-' << " ";
+			}
+			else {
+				std::cout << gameBoard[i][j] << " ";
+			}
 		}
 		std::cout << std::endl;
 	}
+	std::cout << std::endl;
 }
 
 size_t write_to_string(void *ptr, size_t size, size_t count, void *stream) {

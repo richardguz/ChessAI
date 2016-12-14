@@ -26,7 +26,26 @@ struct Coord{
 	int y;
 };
 
-void printGameboard(std::array<std::array<int, 8>, 8> gameBoard);
+struct piece{
+	piece(int x, int y, char pieceType) : x(x), y(y), pieceType(pieceType) {}
+	int x;
+	int y;
+	char pieceType;
+};
+
+struct gameMove{
+	//gameMove();
+	gameMove(int x1, int y1, int x2, int y2, char pieceType, double value)
+	: x1(x1), y1(y1), x2(x2), y2(y2), pieceType(pieceType), value(value) {}
+	int x1;
+	int y1;
+	int x2;
+	int y2;
+	char pieceType;
+	double value;
+};
+
+void printGameboard(std::array<std::array<char, 8>, 8> gameBoard);
 size_t write_to_string(void *ptr, size_t size, size_t count, void *stream);
 std::string makeHTTPRequest(const char* requestUrl, std::string type, const char* fields);
 

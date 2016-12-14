@@ -11,10 +11,12 @@ public:
 
 	std::array<std::array<char, 8>, 8> getGameBoard();
 	std::array<std::array<char, 8>, 8> parseGameBoard(std::string response);
-	void joingame(int gameId);
-	void createGame();
 
+	void joinGame(int gameId);
+	void createGame();
 	void sendMove(std::string move);
+
+	std::string getColor();
 
 private:
 	std::string baseUrl;
