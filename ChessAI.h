@@ -17,6 +17,8 @@ public:
 	std::vector<gameMove> generateKnightMoves(piece knight);
 	std::vector<gameMove> generateRookMoves(piece rook);
 	std::vector<gameMove> generateQueenMoves(piece queen);
+
+	std::vector<gameMove> generateMoves(std::vector<piece> pieces);
 	// std::vector<move> generateKingMoves(piece king);
 	bool isValidPawnMove(gameMove m);
 	bool isValidBishopMove(gameMove m);
@@ -26,8 +28,10 @@ public:
 	double valueGained(char p);
 	bool pawnMoved(piece pawn);
 	bool isBlocked(int x, int y);
+	bool inCheck(int x, int y);
 	bool outOfBounds(int x, int y);
-	void checkPieces();
+	void getPieces();
+	void getOpponentPieces();
 	void makeMove(gameMove m);
 
 private: 

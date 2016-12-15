@@ -8,29 +8,65 @@ ChessAI::ChessAI(string endpointUrl) {
 	egm = new EngineMediator(endpointUrl);
 	egm->createGame();
 	gameBoard = egm->getGameBoard();
-	color = egm->getColor();
+	color = "black";//egm->getColor();
 
-	gameBoard[2][2] = 'Q';
-	checkPieces();
-	vector<gameMove> gm = generatePawnMoves(myPieces[9]);
+	getPieces();
+	vector<gameMove> gm = generateRookMoves(myPieces[0]);
 	cout << gm.size() << endl;
 	for (int i = 0; i < gm.size(); i++) {
 		cout << gm[i].value << endl;
 		makeMove(gm[i]);
 	}
+
+	cout << inCheck(7, 3) << endl;
 }
 
-void ChessAI::checkPieces() {
+vector<gameMove> ChessAI::generateMoves(vector<piece> pieces) {
+	vector<gameMove> myMoves;
+	for (int i = 0; i < pieces.size(); i++) {
+		vector<gameMove> pieceMoves;
+		piece p = pieces[i];
+		switch(tolower(p.pieceType)) {
+			case 'p': 
+				pieceMoves = generatePawnMoves(p);
+				break;
+			case 'b':
+				pieceMoves = generateBishopMoves(p);
+				break;
+			case 'n':
+				pieceMoves = generateKnightMoves(p);
+				break;
+			case 'r':
+				pieceMoves = generateRookMoves(p);
+				break;
+			case 'q':
+				pieceMoves = generateQueenMoves(p);
+				break;
+		}
+		myMoves.insert(myMoves.end(), pieceMoves.begin(), pieceMoves.end());
+	}
+
+	return myMoves;
+}
+
+void ChessAI::getPieces() {
 	myPieces.clear();
+	opponentPieces.clear();
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			if (color == "white" && isupper(gameBoard[i][j])) {
+			if (isupper(gameBoard[i][j])) {
 				piece newPiece = piece(i, j, gameBoard[i][j]);
-				myPieces.push_back(newPiece);
+				if (color == "white")
+					myPieces.push_back(newPiece);
+				else
+					opponentPieces.push_back(newPiece);
 			}
-			else if (color == "black" && islower(gameBoard[i][j])) {
+			else if (islower(gameBoard[i][j])) {
 				piece newPiece = piece(i, j, gameBoard[i][j]);
-				myPieces.push_back(newPiece);
+				if (color == "black")
+					myPieces.push_back(newPiece);
+				else
+					opponentPieces.push_back(newPiece);
 			}
 		}
 	}
@@ -46,6 +82,23 @@ bool ChessAI::isBlocked(int x, int y) {
 
 bool ChessAI::outOfBounds(int x, int y) {
 	return (x > 7 || x < 0 || y > 7 || y < 0);
+}
+
+bool ChessAI::inCheck(int x, int y) {
+	color = color == "white" ? "black" : "white";
+	vector<gameMove> opponentMoves = generateMoves(opponentPieces);
+	for (int i = 0; i < opponentMoves.size(); i++) {
+		makeMove(opponentMoves[i]);
+		if (tolower(opponentMoves[i].pieceType) == 'p') {
+			if (opponentMoves[i].x2 == x && opponentMoves[i].y2 == y && opponentMoves[i].y1 != opponentMoves[i].y2) {
+				return true;
+			}
+		}
+		if (opponentMoves[i].x2 == x && opponentMoves[i].y2 == y) {
+			return true;
+		}
+	}
+	return false;
 }
 
 bool ChessAI::isValidPawnMove(gameMove m) {
@@ -150,11 +203,10 @@ vector<gameMove> ChessAI::generateKnightMoves(piece knight) {
 	int oldX = knight.x;
 	int oldY = knight.y;
 
-	cout << oldX << " " << oldY << endl;
+	//cout << oldX << " " << oldY << endl;
 	for (int i = 0; i < 4; i++) {
 			int offsetX = i % 2 ? 1 : -1;
 			int offsetY = i > 1 ? 1 : -1;
-			cout << offsetX << " " << offsetY << endl;
 			int newX1 = oldX + offsetX * 1;
 			int newY1 = oldY + offsetY * 2;
 			double value1 = valueGained(gameBoard[newX1][newY1]);
@@ -245,9 +297,13 @@ vector<gameMove> ChessAI::generateQueenMoves(piece queen) {
 
 
 void ChessAI::makeMove(gameMove m) {
+	char movedPiece = gameBoard[m.x1][m.y1];
+	char removedPiece = gameBoard[m.x2][m.y2];
 	gameBoard[m.x1][m.y1] = '\0';
 	gameBoard[m.x2][m.y2] = m.pieceType;
 	printGameboard(gameBoard);
+	gameBoard[m.x1][m.y1] = movedPiece;
+	gameBoard[m.x2][m.y2] = removedPiece;
 }
 // vector<array<array<int, 8>, 8>> validKnightMoves(array<array<int, 8>, 8> gameBoard, Coord position) {
 // 	vector<array<array<int, 8>, 8>> newGameBoards;
