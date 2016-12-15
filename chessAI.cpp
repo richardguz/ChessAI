@@ -73,11 +73,12 @@ void ChessAI::getPieces() {
 }
 
 bool ChessAI::pawnMoved(piece pawn) {
-	return !(this->color == "white" && pawn.x == 6 || this->color == "black" && pawn.x == 1);
+	char pieceType = pawn.pieceType;
+	return !(isupper(pieceType) && pawn.x == 6 || islower(pieceType) && pawn.x == 1);
 }
 
-bool ChessAI::isBlocked(int x, int y) {
-	return (this->color == "white" && isupper(this->gameBoard[x][y]) || this->color == "black" && islower(this->gameBoard[x][y]));
+bool ChessAI::isBlocked(int x, int y, char pieceType) {
+	return (isupper(pieceType) && isupper(this->gameBoard[x][y]) || islower(pieceType) && islower(this->gameBoard[x][y]));
 }
 
 bool ChessAI::outOfBounds(int x, int y) {
@@ -85,7 +86,7 @@ bool ChessAI::outOfBounds(int x, int y) {
 }
 
 bool ChessAI::inCheck(int x, int y) {
-	color = color == "white" ? "black" : "white";
+	//color = color == "white" ? "black" : "white";
 	vector<gameMove> opponentMoves = generateMoves(opponentPieces);
 	for (int i = 0; i < opponentMoves.size(); i++) {
 		makeMove(opponentMoves[i]);
@@ -107,13 +108,13 @@ bool ChessAI::isValidPawnMove(gameMove m) {
 	if (outOfBounds(m.x2, m.y2))
 		return false;
 
-	if (this->color == "white") {
+	if (isupper(m.pieceType)) {
 		for (int i = m.x2; i < m.x1; i++) {
 			if (this->gameBoard[i][y] != '\0')
 				return false;
 		}
 	}
-	if (this->color == "black") {
+	if (islower(m.pieceType)) {
 		for (int i = m.x1 + 1; i <= m.x2; i++) {
 			if (this->gameBoard[i][y] != '\0')
 				return false;
@@ -121,9 +122,9 @@ bool ChessAI::isValidPawnMove(gameMove m) {
 	}
 
 	if (m.y1 != m.y2){
-		if (!islower(gameBoard[m.x2][m.y2]) && this->color == "white")
+		if (!islower(gameBoard[m.x2][m.y2]) && isupper(m.pieceType))
 			return false;
-		if (!isupper(gameBoard[m.x2][m.y2]) && this->color == "black")
+		if (!isupper(gameBoard[m.x2][m.y2]) && islower(m.pieceType))
 			return false;
 	}
 
@@ -134,7 +135,7 @@ bool ChessAI::isValidKnightMove(gameMove m) {
 	if (outOfBounds(m.x2, m.y2)){
 		return false;
 	}
-	return !(isBlocked(m.x2, m.y2));
+	return !(isBlocked(m.x2, m.y2, m.pieceType));
 }
 
 double ChessAI::valueGained(char p) {
@@ -167,7 +168,7 @@ vector<gameMove> ChessAI::generatePawnMoves(piece pawn) {
 	int oldY = pawn.y;
 	int newX = 0;
 	int newY = 0;
-	int offset = this->color == "white" ? - 1 : 1;
+	int offset = isupper(pawn.pieceType) ? - 1 : 1;
 	if (!pawnMoved(pawn)) {
 		newX = oldX + (offset * 2);
 		newY = oldY;
@@ -240,7 +241,7 @@ vector<gameMove> ChessAI::generateBishopMoves(piece bishop) {
 
 		int newX = oldX + offsetX;
 		int newY = oldY + offsetY;
-		while (!isBlocked(newX, newY) && !outOfBounds(newX, newY) && !done) {
+		while (!isBlocked(newX, newY, bishop.pieceType) && !outOfBounds(newX, newY) && !done) {
 			if (gameBoard[newX][newY] != '\0')
 				done = true;
 			double value = valueGained(gameBoard[newX][newY]);
@@ -270,7 +271,7 @@ vector<gameMove> ChessAI::generateRookMoves(piece rook) {
 			newY += offset;
 		}
 
-		while (!isBlocked(newX, newY) && !outOfBounds(newX, newY) && !done) {
+		while (!isBlocked(newX, newY, rook.pieceType) && !outOfBounds(newX, newY) && !done) {
 			if (gameBoard[newX][newY] != '\0')
 				done = true;
 			double value = valueGained(gameBoard[newX][newY]);

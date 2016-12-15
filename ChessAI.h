@@ -27,7 +27,7 @@ public:
 
 	double valueGained(char p);
 	bool pawnMoved(piece pawn);
-	bool isBlocked(int x, int y);
+	bool isBlocked(int x, int y, char pieceType);
 	bool inCheck(int x, int y);
 	bool outOfBounds(int x, int y);
 	void getPieces();
