@@ -10,11 +10,10 @@ ChessAI::ChessAI(string endpointUrl) {
 	gameBoard = egm->getGameBoard();
 	color = egm->getColor();
 
-	gameBoard[3][4] = 'Q';
+	gameBoard[2][2] = 'Q';
 	checkPieces();
-	vector<gameMove> gm = generateQueenMoves(myPieces[0]);
+	vector<gameMove> gm = generatePawnMoves(myPieces[9]);
 	cout << gm.size() << endl;
-	cout << gm[0].x2 << " " << gm[0].y2 << endl;
 	for (int i = 0; i < gm.size(); i++) {
 		cout << gm[i].value << endl;
 		makeMove(gm[i]);
@@ -57,16 +56,22 @@ bool ChessAI::isValidPawnMove(gameMove m) {
 
 	if (this->color == "white") {
 		for (int i = m.x2; i < m.x1; i++) {
-			cout << i << endl;
-			if (isupper(this->gameBoard[i][y]))
+			if (this->gameBoard[i][y] != '\0')
 				return false;
 		}
 	}
 	if (this->color == "black") {
 		for (int i = m.x1 + 1; i <= m.x2; i++) {
-			if (isupper(this->gameBoard[i][y]))
+			if (this->gameBoard[i][y] != '\0')
 				return false;
 		}
+	}
+
+	if (m.y1 != m.y2){
+		if (!islower(gameBoard[m.x2][m.y2]) && this->color == "white")
+			return false;
+		if (!isupper(gameBoard[m.x2][m.y2]) && this->color == "black")
+			return false;
 	}
 
 	return true;
@@ -109,24 +114,33 @@ vector<gameMove> ChessAI::generatePawnMoves(piece pawn) {
 	int oldY = pawn.y;
 	int newX = 0;
 	int newY = 0;
+	int offset = this->color == "white" ? - 1 : 1;
 	if (!pawnMoved(pawn)) {
-		newX = oldX - 2;
+		newX = oldX + (offset * 2);
 		newY = oldY;
-		double value = valueGained(gameBoard[newX][newY]);
-		gameMove m = gameMove(oldX, oldY, newX, newY, pawn.pieceType, value);
+		gameMove m = gameMove(oldX, oldY, newX, newY, pawn.pieceType, 0);
 		if (isValidPawnMove(m)) {
 			moves.push_back(m);
 		}
 	}
 
-	newX = oldX - 1;
+	newX = oldX + offset;
 	newY = oldY;
-	cout << newX << newY << endl;
-	double value = valueGained(gameBoard[newX][newY]);
-	gameMove m = gameMove(oldX, oldY, newX, newY, pawn.pieceType, value);
+	gameMove m = gameMove(oldX, oldY, newX, newY, pawn.pieceType, 0);
 	if (isValidPawnMove(m)) {
 		moves.push_back(m);
 	}
+
+	for (int i = 0; i < 2; i++) {
+		newX = oldX + offset;
+		newY = i == 1 ? oldY + 1 : oldY - 1;
+		double value = valueGained(gameBoard[newX][newY]);
+		gameMove mCapture = gameMove(oldX, oldY, newX, newY, pawn.pieceType, value);
+		if (isValidPawnMove(mCapture)) {
+			moves.push_back(mCapture);
+		}
+	}
+
 	return moves;
 }
 

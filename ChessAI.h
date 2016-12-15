@@ -35,6 +35,7 @@ private:
 	std::array<std::array<char, 8>, 8> gameBoard;
 	std::string color;
 	std::vector<piece> myPieces;
+	std::vector<piece> opponentPieces;
 };
 
 #endif //CHESS_AI_H
