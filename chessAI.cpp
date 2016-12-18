@@ -10,23 +10,26 @@ ChessAI::ChessAI(string endpointUrl) {
 	gameBoard = egm->getGameBoard();
 	color = "white";//egm->getColor();
 
-	gameBoard[2][4] = 'q';
-	gameBoard[3][4] = 'Q';
-	gameBoard[4][4] = 'K';
+	gameBoard[0][3] = '\0';
+	gameBoard[2][4] = 'k';
+	gameBoard[3][4] = 'r';
+	gameBoard[4][4] = 'Q';
+	gameBoard[4][3] = 'K';
 	gameBoard[7][3] = '\0';
 	getPieces(gameBoard);
-
-	//vector<gameMove> gm = generateQueenMoves(myPieces[0]);
+	printGameboard(gameBoard);
+	cout << myPieces[0].pieceType << endl;
+	vector<gameMove> gm = generateKingMoves(myPieces[0]);
 	//cout << moveBadState(gm[8]) << endl;
-	
-	pruneBadMoves(generateMoves(myPieces));
+	//gm = pruneBadMoves(gm);
+	//pruneBadMoves(generateMoves(myPieces));
 
 	// vector<gameMove> gm = generateKingMoves(myPieces[0]);
-	// cout << gm.size() << endl;
-	// for (int i = 0; i < gm.size(); i++) {
-	// 	cout << gm[i].value << endl;
-	// 	makeMove(gm[i]);
-	// }
+	//cout << gm.size() << endl;
+	for (int i = 0; i < gm.size(); i++) {
+		cout << gm[i].value << endl;
+		makeMove(gm[i]);
+	}
 	// cout << myKing->x << " " << myKing->y << endl;
 	//cout << inCheck(4, 4, this->gameBoard, "white") << endl;
 }
@@ -52,6 +55,9 @@ vector<gameMove> ChessAI::generateMoves(vector<piece> pieces) {
 			case 'q':
 				pieceMoves = generateQueenMoves(p);
 				break;
+			// case 'k':
+			// 	pieceMoves = generateKingMoves(p);
+			// 	break;
 		}
 		myMoves.insert(myMoves.end(), pieceMoves.begin(), pieceMoves.end());
 	}
@@ -159,6 +165,7 @@ bool ChessAI::moveBadState(gameMove m) {
 	int kingY = moveColor == color ? myKing->y : opponentKing->y;
 	if (inCheck(kingX, kingY, tempGameboard, "white"))
 		return true;
+	printGameboard(tempGameboard);
 	return false;
 }
 
@@ -358,13 +365,14 @@ vector<gameMove> ChessAI::generateKingMoves(piece king) {
 	int oldX = king.x;
 	int oldY = king.y;
 	string kingColor = isupper(king.pieceType) ? "white" : "black";
-	for (int i = -1; i <= 1; i ++) {
+	for (int i = -1; i <= 1; i++) {
 		for (int j = -1; j <= 1; j++) {
+			cout << i << " " << j << endl;
 			if (i == 0 && j == 0)
 				continue;
 			int newX = oldX + i;
 			int newY = oldY + j;
-			if (!inCheck(newX, newY, gameBoard, kingColor)) {
+			if (!isBlocked(newX, newY, king.pieceType) && !inCheck(newX, newY, gameBoard, kingColor)) {
 				double value = valueGained(gameBoard[newX][newY]);
 				moves.push_back(gameMove(oldX, oldY, newX, newY, king.pieceType, value));
 			}
