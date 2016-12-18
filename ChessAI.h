@@ -18,7 +18,7 @@ public:
 	std::vector<gameMove> generateRookMoves(piece rook);
 	std::vector<gameMove> generateQueenMoves(piece queen);
 	std::vector<gameMove> generateKingMoves(piece king);
-	
+
 	std::vector<gameMove> generateMoves(std::vector<piece> pieces);
 	std::vector<gameMove> pruneBadMoves(std::vector<gameMove> moves);
 
@@ -31,6 +31,7 @@ public:
 	bool outOfBounds(int x, int y);
 	bool inCheck(int x, int y, std::array<std::array<char, 8>, 8> board, std::string kingColor);
 	bool moveBadState(gameMove m);
+	bool kingsKissing(int x, int y, piece oppositeKing);
 
 
 	double valueGained(char p);

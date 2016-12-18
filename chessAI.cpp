@@ -1,4 +1,6 @@
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
 #include "ChessAI.h"
 
 
@@ -153,6 +155,15 @@ bool ChessAI::inCheck(int x, int y, array<array<char, 8>, 8> board, string kingC
 	}
 	this->gameBoard = saveGameboardState;
 	return kingInCheck;
+}
+
+bool ChessAI::kingsKissing(int x, int y, piece oppositeKing) {
+	int xDiff = abs(x - oppositeKing.x);
+	int yDiff = abs(y - oppositeKing.y);
+	if (yDiff <= 1 && xDiff <= 1){
+		return true;
+	}
+	return false;
 }
 
 bool ChessAI::moveBadState(gameMove m) {
@@ -367,12 +378,12 @@ vector<gameMove> ChessAI::generateKingMoves(piece king) {
 	string kingColor = isupper(king.pieceType) ? "white" : "black";
 	for (int i = -1; i <= 1; i++) {
 		for (int j = -1; j <= 1; j++) {
-			cout << i << " " << j << endl;
 			if (i == 0 && j == 0)
 				continue;
 			int newX = oldX + i;
 			int newY = oldY + j;
-			if (!isBlocked(newX, newY, king.pieceType) && !inCheck(newX, newY, gameBoard, kingColor)) {
+			piece oppositeKing = kingColor == color ? *opponentKing : *myKing;
+			if (!isBlocked(newX, newY, king.pieceType) && !inCheck(newX, newY, gameBoard, kingColor) && !kingsKissing(newX, newY, oppositeKing)) {
 				double value = valueGained(gameBoard[newX][newY]);
 				moves.push_back(gameMove(oldX, oldY, newX, newY, king.pieceType, value));
 			}
