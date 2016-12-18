@@ -16,6 +16,10 @@ void EngineMediator::createGame() {
 	string response = "";
 	response = makeHTTPRequest(url.c_str(), "POST", "");
 
+	if (response.empty()) {
+		cout << "The server cannot be reached" << endl;
+		return;
+	}
 	json game = json::parse(response);
 	int id = game["id"];
 	this->gameId = id;

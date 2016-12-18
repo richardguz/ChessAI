@@ -17,20 +17,25 @@ public:
 	std::vector<gameMove> generateKnightMoves(piece knight);
 	std::vector<gameMove> generateRookMoves(piece rook);
 	std::vector<gameMove> generateQueenMoves(piece queen);
-
+	std::vector<gameMove> generateKingMoves(piece king);
+	
 	std::vector<gameMove> generateMoves(std::vector<piece> pieces);
-	// std::vector<move> generateKingMoves(piece king);
+	std::vector<gameMove> pruneBadMoves(std::vector<gameMove> moves);
+
+	
 	bool isValidPawnMove(gameMove m);
 	bool isValidBishopMove(gameMove m);
 	bool isValidKnightMove(gameMove m);
+	bool pawnMoved(piece pawn);
+	bool isBlocked(int x, int y, char pieceType);
+	bool outOfBounds(int x, int y);
+	bool inCheck(int x, int y, std::array<std::array<char, 8>, 8> board, std::string kingColor);
+	bool moveBadState(gameMove m);
 
 
 	double valueGained(char p);
-	bool pawnMoved(piece pawn);
-	bool isBlocked(int x, int y, char pieceType);
-	bool inCheck(int x, int y);
-	bool outOfBounds(int x, int y);
-	void getPieces();
+	
+	void getPieces(std::array<std::array<char, 8>, 8> board);
 	void getOpponentPieces();
 	void makeMove(gameMove m);
 
@@ -40,6 +45,8 @@ private:
 	std::string color;
 	std::vector<piece> myPieces;
 	std::vector<piece> opponentPieces;
+	piece* myKing;
+	piece* opponentKing;
 };
 
 #endif //CHESS_AI_H

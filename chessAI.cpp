@@ -8,17 +8,27 @@ ChessAI::ChessAI(string endpointUrl) {
 	egm = new EngineMediator(endpointUrl);
 	egm->createGame();
 	gameBoard = egm->getGameBoard();
-	color = "black";//egm->getColor();
+	color = "white";//egm->getColor();
 
-	getPieces();
-	vector<gameMove> gm = generateRookMoves(myPieces[0]);
-	cout << gm.size() << endl;
-	for (int i = 0; i < gm.size(); i++) {
-		cout << gm[i].value << endl;
-		makeMove(gm[i]);
-	}
+	gameBoard[2][4] = 'q';
+	gameBoard[3][4] = 'Q';
+	gameBoard[4][4] = 'K';
+	gameBoard[7][3] = '\0';
+	getPieces(gameBoard);
 
-	cout << inCheck(7, 3) << endl;
+	//vector<gameMove> gm = generateQueenMoves(myPieces[0]);
+	//cout << moveBadState(gm[8]) << endl;
+	
+	pruneBadMoves(generateMoves(myPieces));
+
+	// vector<gameMove> gm = generateKingMoves(myPieces[0]);
+	// cout << gm.size() << endl;
+	// for (int i = 0; i < gm.size(); i++) {
+	// 	cout << gm[i].value << endl;
+	// 	makeMove(gm[i]);
+	// }
+	// cout << myKing->x << " " << myKing->y << endl;
+	//cout << inCheck(4, 4, this->gameBoard, "white") << endl;
 }
 
 vector<gameMove> ChessAI::generateMoves(vector<piece> pieces) {
@@ -27,7 +37,7 @@ vector<gameMove> ChessAI::generateMoves(vector<piece> pieces) {
 		vector<gameMove> pieceMoves;
 		piece p = pieces[i];
 		switch(tolower(p.pieceType)) {
-			case 'p': 
+			case 'p':
 				pieceMoves = generatePawnMoves(p);
 				break;
 			case 'b':
@@ -45,28 +55,58 @@ vector<gameMove> ChessAI::generateMoves(vector<piece> pieces) {
 		}
 		myMoves.insert(myMoves.end(), pieceMoves.begin(), pieceMoves.end());
 	}
-
+	
 	return myMoves;
 }
 
-void ChessAI::getPieces() {
+vector<gameMove> ChessAI::pruneBadMoves(vector<gameMove> moves) {
+	int i = 0;
+	while (i < moves.size()) {
+		if (moveBadState(moves[i])) {
+			moves.erase(moves.begin() + i);
+		}
+		else {
+			++i;
+		}
+	}
+	return moves;
+}
+
+
+void ChessAI::getPieces(array<array<char, 8>, 8> board) {
 	myPieces.clear();
 	opponentPieces.clear();
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			if (isupper(gameBoard[i][j])) {
-				piece newPiece = piece(i, j, gameBoard[i][j]);
-				if (color == "white")
+			if (isupper(board[i][j])) {
+				piece newPiece = piece(i, j, board[i][j]);
+				if (color == "white") {
+					if (newPiece.pieceType == 'K'){
+						this->myKing = new piece(i, j, board[i][j]);
+					}
 					myPieces.push_back(newPiece);
-				else
+				}
+				else{
+					if (newPiece.pieceType == 'K'){
+						this->opponentKing = new piece(i, j, board[i][j]);
+					}
 					opponentPieces.push_back(newPiece);
+				}
 			}
 			else if (islower(gameBoard[i][j])) {
-				piece newPiece = piece(i, j, gameBoard[i][j]);
-				if (color == "black")
+				piece newPiece = piece(i, j, board[i][j]);
+				if (color == "black"){
+					if (newPiece.pieceType == 'k'){
+						this->myKing = new piece(i, j, board[i][j]);
+					}
 					myPieces.push_back(newPiece);
-				else
+				}
+				else{
+					if (newPiece.pieceType == 'k'){
+						this->opponentKing = new piece(i, j, board[i][j]);
+					}
 					opponentPieces.push_back(newPiece);
+				}
 			}
 		}
 	}
@@ -85,20 +125,40 @@ bool ChessAI::outOfBounds(int x, int y) {
 	return (x > 7 || x < 0 || y > 7 || y < 0);
 }
 
-bool ChessAI::inCheck(int x, int y) {
+bool ChessAI::inCheck(int x, int y, array<array<char, 8>, 8> board, string kingColor) {
 	//color = color == "white" ? "black" : "white";
-	vector<gameMove> opponentMoves = generateMoves(opponentPieces);
+	bool kingInCheck = false;
+	array<array<char, 8>, 8> saveGameboardState = this->gameBoard;
+	this->gameBoard = board;
+
+	board[x][y] = kingColor == "white" ? 'K' : 'k';
+	vector<gameMove> opponentMoves = kingColor == color ? generateMoves(opponentPieces) : generateMoves(myPieces) ;
 	for (int i = 0; i < opponentMoves.size(); i++) {
-		makeMove(opponentMoves[i]);
 		if (tolower(opponentMoves[i].pieceType) == 'p') {
 			if (opponentMoves[i].x2 == x && opponentMoves[i].y2 == y && opponentMoves[i].y1 != opponentMoves[i].y2) {
-				return true;
+				kingInCheck = true;
+				break;
 			}
 		}
-		if (opponentMoves[i].x2 == x && opponentMoves[i].y2 == y) {
-			return true;
+		else if (opponentMoves[i].x2 == x && opponentMoves[i].y2 == y) {
+			kingInCheck  = true;
+			break;
 		}
 	}
+	this->gameBoard = saveGameboardState;
+	return kingInCheck;
+}
+
+bool ChessAI::moveBadState(gameMove m) {
+	array<array<char, 8>, 8> tempGameboard = gameBoard;
+	tempGameboard[m.x1][m.y1] = '\0';
+	tempGameboard[m.x2][m.y2] = m.pieceType;
+	getPieces(tempGameboard);
+	string moveColor = isupper(m.pieceType) ? "white" : "black";
+	int kingX = moveColor == color ? myKing->x : opponentKing->x;
+	int kingY = moveColor == color ? myKing->y : opponentKing->y;
+	if (inCheck(kingX, kingY, tempGameboard, "white"))
+		return true;
 	return false;
 }
 
@@ -162,7 +222,6 @@ double ChessAI::valueGained(char p) {
 }
 
 vector<gameMove> ChessAI::generatePawnMoves(piece pawn) {
-	//gameMove m;
 	vector<gameMove> moves;
 	int oldX = pawn.x;
 	int oldY = pawn.y;
@@ -204,7 +263,6 @@ vector<gameMove> ChessAI::generateKnightMoves(piece knight) {
 	int oldX = knight.x;
 	int oldY = knight.y;
 
-	//cout << oldX << " " << oldY << endl;
 	for (int i = 0; i < 4; i++) {
 			int offsetX = i % 2 ? 1 : -1;
 			int offsetY = i > 1 ? 1 : -1;
@@ -293,6 +351,27 @@ vector<gameMove> ChessAI::generateQueenMoves(piece queen) {
 	bishopMoves.insert( bishopMoves.end(), rookMoves.begin(), rookMoves.end());
 
 	return bishopMoves;
+}
+
+vector<gameMove> ChessAI::generateKingMoves(piece king) {
+	vector<gameMove> moves;
+	int oldX = king.x;
+	int oldY = king.y;
+	string kingColor = isupper(king.pieceType) ? "white" : "black";
+	for (int i = -1; i <= 1; i ++) {
+		for (int j = -1; j <= 1; j++) {
+			if (i == 0 && j == 0)
+				continue;
+			int newX = oldX + i;
+			int newY = oldY + j;
+			if (!inCheck(newX, newY, gameBoard, kingColor)) {
+				double value = valueGained(gameBoard[newX][newY]);
+				moves.push_back(gameMove(oldX, oldY, newX, newY, king.pieceType, value));
+			}
+		}
+	}
+
+	return moves;
 }
 
 

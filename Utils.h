@@ -5,6 +5,9 @@
 #include <string>
 #include <iostream> 
 
+
+#define BLACK 0
+#define WHITE 1
 // enum pieces {
 // 	PAWN = "p",
 // 	BISHOP = "b",
@@ -31,6 +34,7 @@ struct piece{
 	int x;
 	int y;
 	char pieceType;
+	int color;
 };
 
 struct gameMove{
