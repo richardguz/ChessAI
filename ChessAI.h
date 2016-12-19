@@ -29,7 +29,7 @@ public:
 	bool pawnMoved(piece pawn);
 	bool isBlocked(int x, int y, char pieceType);
 	bool outOfBounds(int x, int y);
-	bool inCheck(int x, int y, std::array<std::array<char, 8>, 8> board, std::string kingColor);
+	bool inCheck(int x, int y, std::array<std::array<char, 8>, 8> board, int kingColor);
 	bool moveBadState(gameMove m);
 	bool kingsKissing(int x, int y, piece oppositeKing);
 
@@ -43,7 +43,7 @@ public:
 private: 
 	EngineMediator* egm;
 	std::array<std::array<char, 8>, 8> gameBoard;
-	std::string color;
+	int color;
 	std::vector<piece> myPieces;
 	std::vector<piece> opponentPieces;
 	piece* myKing;

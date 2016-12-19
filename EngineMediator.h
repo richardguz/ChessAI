@@ -16,15 +16,15 @@ public:
 	void createGame();
 	void sendMove(std::string move);
 
-	std::string getColor();
+	int getColor();
 
 private:
 	std::string baseUrl;
 	std::string getStateUrl;
 	std::string postMoveUrl;
-	std::string color;
 	std::string token;
 
+	int color;
 	int gameId;
 	bool turn;
 	std::array<std::array<char, 8>, 8> gameboard;

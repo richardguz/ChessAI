@@ -25,7 +25,7 @@ void EngineMediator::createGame() {
 	this->gameId = id;
 	this->token = game["token"];
 	this->turn = game["turn"];
-	this->color = "white";
+	this->color = WHITE;
 	this->gameboard = parseGameBoard(response);
 	this->getStateUrl = baseUrl + "games/" + to_string(id) + "/state";
 	this->postMoveUrl = baseUrl + "games/" + to_string(id) + "/move";
@@ -39,7 +39,7 @@ void EngineMediator::joinGame(int gameId) {
 	this->gameId = gameId;
 	this->token = game["token"];
 	this->turn = game["turn"];
-	this->color = "black";
+	this->color = BLACK;
 	this->gameboard = parseGameBoard(response);
 	this->getStateUrl = baseUrl + "games/" + to_string(gameId) + "/state";
 	this->postMoveUrl = baseUrl + "games/" + to_string(gameId) + "/move";
@@ -76,6 +76,6 @@ void EngineMediator::sendMove(string move) {
 	string response = makeHTTPRequest(this->postMoveUrl.c_str(), "POST", sPostData.c_str());
 }
 
-string EngineMediator::getColor(){
+int EngineMediator::getColor(){
 	return color;
 }
