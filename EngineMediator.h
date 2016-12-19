@@ -3,6 +3,7 @@
 
 #include <string>
 #include <array>
+#include "Utils.h"
 
 class EngineMediator {
 
@@ -14,7 +15,7 @@ public:
 
 	void joinGame(int gameId);
 	void createGame();
-	void sendMove(std::string move);
+	std::string sendMove(gameMove move);
 
 	int getColor();
 

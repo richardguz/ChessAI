@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <random>
 #include "ChessAI.h"
 
 
@@ -10,29 +11,24 @@ ChessAI::ChessAI(string endpointUrl) {
 	egm = new EngineMediator(endpointUrl);
 	egm->createGame();
 	gameBoard = egm->getGameBoard();
-	color = BLACK;//egm->getColor();
-
-	gameBoard[0][3] = '\0';
-	gameBoard[2][4] = 'k';
-	gameBoard[3][4] = 'r';
-	gameBoard[4][4] = 'Q';
-	gameBoard[4][3] = 'K';
-	gameBoard[7][3] = '\0';
+	color = egm->getColor();
 	getPieces(gameBoard);
-	printGameboard(gameBoard);
-	cout << myPieces[0].pieceType << endl;
-	vector<gameMove> gm = generateRookMoves(myPieces[16]);
-	//cout << moveBadState(gm[8]) << endl;
-	gm = pruneBadMoves(gm);
-	//pruneBadMoves(generateMoves(myPieces));
 
-	// vector<gameMove> gm = generateKingMoves(myPieces[0]);
-	//cout << gm.size() << endl;
-	for (int i = 0; i < gm.size(); i++) {
-		cout << gm[i].value << endl;
-		makeMove(gm[i]);
-	}
-	// cout << myKing->x << " " << myKing->y << endl;
+	// gameBoard[0][3] = '\0';
+	// gameBoard[2][4] = 'k';
+	// gameBoard[3][4] = 'r';
+	// gameBoard[4][4] = 'Q';
+	// gameBoard[4][3] = 'K';
+	// gameBoard[7][3] = '\0';
+	// getPieces(gameBoard);
+	// printGameboard(gameBoard);
+	// cout << myPieces[0].pieceType << endl;
+	// vector<gameMove> gm = generateRookMoves(myPieces[16]);
+	// gm = pruneBadMoves(gm);
+	// for (int i = 0; i < gm.size(); i++) {
+	// 	cout << gm[i].value << endl;
+	// 	makeMove(gm[i]);
+	// }
 }
 
 vector<gameMove> ChessAI::generateMoves(vector<piece> pieces) {
@@ -64,6 +60,33 @@ vector<gameMove> ChessAI::generateMoves(vector<piece> pieces) {
 	}
 	
 	return myMoves;
+}
+
+gameMove ChessAI::chooseMove() {
+	vector<gameMove> gm = generateMoves(myPieces);
+	int maxValue = 0;
+	int index = -1;
+
+	random_device rd; // obtain a random number from hardware
+    mt19937 eng(rd()); // seed the generator
+    uniform_int_distribution<> distr(0, gm.size()); // define the range
+
+	for (int i = 0; i < gm.size(); i++) {
+		if (gm[i].value > maxValue) {
+			maxValue = gm[i].value;
+			index = i;
+		}
+	}
+	if (index == -1) {
+		index = distr(eng);
+	}
+
+	gameBoard = egm->getGameBoard();
+	getPieces(gameBoard);
+	
+	egm->sendMove(gm[index]);	
+	makeMove(gm[index]);
+	return gm[index];
 }
 
 vector<gameMove> ChessAI::pruneBadMoves(vector<gameMove> moves) {
@@ -457,4 +480,14 @@ int main() {
  // 	cin >> option;
 
 	ChessAI cai = ChessAI("http://localhost:3000/");
+	gameMove gm = cai.chooseMove();
+	while (true) {
+		int move;
+		cout << "Make a move? ";
+		cin >> move;
+		if (move == 1) {
+			cai.chooseMove();
+		}
+	}
+	//cai->egm.sendMove(//)
 }

@@ -40,6 +40,8 @@ public:
 	void getOpponentPieces();
 	void makeMove(gameMove m);
 
+	gameMove chooseMove();
+
 private: 
 	EngineMediator* egm;
 	std::array<std::array<char, 8>, 8> gameBoard;

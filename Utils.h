@@ -17,12 +17,6 @@
 // 	QUEEN = "Q"
 // };
 
-struct treeNode{
-	treeNode* parent;
-	int value;
-	int gameBoard[8][8];
-};
-
 struct Coord{
 	Coord(int x, int y) : x(x), y(y) {}
 	int x;
@@ -47,6 +41,13 @@ struct gameMove{
 	int y2;
 	char pieceType;
 	double value;
+};
+
+struct treeNode{
+	treeNode* parent;
+	int value;
+	gameMove gm;
+	std::array<std::array<char, 8>, 8> gameBoard;
 };
 
 void printGameboard(std::array<std::array<char, 8>, 8> gameBoard);

@@ -2,7 +2,6 @@
 #include <string>
 
 #include "EngineMediator.h"
-#include "Utils.h"
 #include "json.hpp"
 
 // for convenience
@@ -29,6 +28,7 @@ void EngineMediator::createGame() {
 	this->gameboard = parseGameBoard(response);
 	this->getStateUrl = baseUrl + "games/" + to_string(id) + "/state";
 	this->postMoveUrl = baseUrl + "games/" + to_string(id) + "/move";
+	cout << game << endl;
 }
 
 void EngineMediator::joinGame(int gameId) {
@@ -67,13 +67,16 @@ array<array<char, 8>, 8> EngineMediator::getGameBoard() {
 	return gameboard;
 }
 
-void EngineMediator::sendMove(string move) {
+string EngineMediator::sendMove(gameMove move) {
 	json postData;
 	postData["token"] = this->token;
-	postData["to"] = {5, 1};
-	postData["from"] = {6, 1};
+	postData["to"] = {move.x2, move.y2};
+	postData["from"] = {move.x1, move.y1};
 	string sPostData = postData.dump();
+	//cout << postData << endl;
 	string response = makeHTTPRequest(this->postMoveUrl.c_str(), "POST", sPostData.c_str());
+	cout << response << endl;
+	return response;
 }
 
 int EngineMediator::getColor(){
