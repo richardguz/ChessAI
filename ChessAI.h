@@ -12,22 +12,22 @@ class ChessAI {
 public:
 	ChessAI(std::string endpointUrl);
 	std::array<std::array<char, 8>, 8> getGameBoard();
-	std::vector<gameMove> generatePawnMoves(piece pawn);
-	std::vector<gameMove> generateBishopMoves(piece bishop);
-	std::vector<gameMove> generateKnightMoves(piece knight);
-	std::vector<gameMove> generateRookMoves(piece rook);
-	std::vector<gameMove> generateQueenMoves(piece queen);
-	std::vector<gameMove> generateKingMoves(piece king);
+	std::vector<gameMove> generatePawnMoves(piece pawn, std::array<std::array<char, 8>, 8> board);
+	std::vector<gameMove> generateBishopMoves(piece bishop, std::array<std::array<char, 8>, 8> board);
+	std::vector<gameMove> generateKnightMoves(piece knight, std::array<std::array<char, 8>, 8> board);
+	std::vector<gameMove> generateRookMoves(piece rook, std::array<std::array<char, 8>, 8> board);
+	std::vector<gameMove> generateQueenMoves(piece queen, std::array<std::array<char, 8>, 8> board);
+	std::vector<gameMove> generateKingMoves(piece king, std::array<std::array<char, 8>, 8> board);
 
-	std::vector<gameMove> generateMoves(std::vector<piece> pieces);
+	std::vector<gameMove> generateMoves(std::vector<piece> pieces, std::array<std::array<char, 8>, 8> board);
 	std::vector<gameMove> pruneBadMoves(std::vector<gameMove> moves);
 
 	
-	bool isValidPawnMove(gameMove m);
-	bool isValidBishopMove(gameMove m);
-	bool isValidKnightMove(gameMove m);
+	bool isValidPawnMove(gameMove m, std::array<std::array<char, 8>, 8> board);
+	bool isValidBishopMove(gameMove m, std::array<std::array<char, 8>, 8> board);
+	bool isValidKnightMove(gameMove m, std::array<std::array<char, 8>, 8> board);
 	bool pawnMoved(piece pawn);
-	bool isBlocked(int x, int y, char pieceType);
+	bool isBlocked(int x, int y, char pieceType, std::array<std::array<char, 8>, 8> board);
 	bool outOfBounds(int x, int y);
 	bool inCheck(int x, int y, std::array<std::array<char, 8>, 8> board, int kingColor);
 	bool moveBadState(gameMove m);
@@ -39,7 +39,7 @@ public:
 	
 	void getPieces(std::array<std::array<char, 8>, 8> board);
 	void getOpponentPieces();
-	std::array<std::array<char, 8>, 8> makeMove(gameMove m, std::array<std::array<char, 8>, 8> gameBoard);
+	std::array<std::array<char, 8>, 8> makeMove(gameMove m, std::array<std::array<char, 8>, 8> board);
 
 	gameMove chooseMove();
 
