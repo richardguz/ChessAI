@@ -3,6 +3,7 @@
 
 #include <array>
 #include <string>
+#include <vector>
 #include <iostream> 
 
 
@@ -32,7 +33,7 @@ struct piece{
 };
 
 struct gameMove{
-	//gameMove();
+	gameMove() {};
 	gameMove(int x1, int y1, int x2, int y2, char pieceType, double value)
 	: x1(x1), y1(y1), x2(x2), y2(y2), pieceType(pieceType), value(value) {}
 	int x1;
@@ -44,7 +45,9 @@ struct gameMove{
 };
 
 struct treeNode{
-	treeNode* parent;
+	treeNode(std::vector<treeNode*> children, gameMove gm, int value, std::array<std::array<char, 8>, 8> gameBoard) 
+	: children(children), value(value), gm(gm), gameBoard(gameBoard) {}
+	std::vector<treeNode*> children;
 	int value;
 	gameMove gm;
 	std::array<std::array<char, 8>, 8> gameBoard;

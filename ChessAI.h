@@ -32,13 +32,14 @@ public:
 	bool inCheck(int x, int y, std::array<std::array<char, 8>, 8> board, int kingColor);
 	bool moveBadState(gameMove m);
 	bool kingsKissing(int x, int y, piece oppositeKing);
+	treeNode* generateMoveTree(std::array<std::array<char, 8>, 8> board, treeNode* parent);
 
 
 	double valueGained(char p);
 	
 	void getPieces(std::array<std::array<char, 8>, 8> board);
 	void getOpponentPieces();
-	void makeMove(gameMove m);
+	std::array<std::array<char, 8>, 8> makeMove(gameMove m, std::array<std::array<char, 8>, 8> gameBoard);
 
 	gameMove chooseMove();
 
@@ -50,6 +51,7 @@ private:
 	std::vector<piece> opponentPieces;
 	piece* myKing;
 	piece* opponentKing;
+	int recursionDepth;
 };
 
 #endif //CHESS_AI_H

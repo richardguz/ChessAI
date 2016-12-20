@@ -13,6 +13,22 @@ ChessAI::ChessAI(string endpointUrl) {
 	gameBoard = egm->getGameBoard();
 	color = egm->getColor();
 	getPieces(gameBoard);
+	recursionDepth = 0;
+
+	gameMove emptyMove;
+	vector<treeNode*> children;
+	treeNode* root = new treeNode(children, emptyMove, 0, gameBoard); 
+	generateMoveTree(gameBoard, root);
+
+	while (true){
+		printGameboard(root->gameBoard);
+		if (root->children.size() != 0){
+			root = root->children[0];
+		}
+		else {
+			break;
+		}
+	}
 
 	// gameBoard[0][3] = '\0';
 	// gameBoard[2][4] = 'k';
@@ -85,8 +101,26 @@ gameMove ChessAI::chooseMove() {
 	getPieces(gameBoard);
 	
 	egm->sendMove(gm[index]);	
-	makeMove(gm[index]);
+	makeMove(gm[index], gameBoard);
 	return gm[index];
+}
+
+treeNode* ChessAI::generateMoveTree(array<array<char, 8>, 8> board, treeNode* parent){
+	getPieces(board);
+	if (recursionDepth < 8){
+		vector<piece> pieces = recursionDepth % 2 == 0 ? myPieces : opponentPieces;
+		recursionDepth++;
+		vector<gameMove> gm = generateMoves(pieces);
+		for (int i = 0; i < gm.size(); i++) {
+			array<array<char, 8>, 8> newGameBoard = makeMove(gm[i], board);
+			vector<treeNode*> children;
+			treeNode* child = new treeNode(children, gm[i], gm[i].value, newGameBoard);
+			parent->children.push_back(child);
+			generateMoveTree(newGameBoard, child);
+		}
+	}
+	
+	return parent;
 }
 
 vector<gameMove> ChessAI::pruneBadMoves(vector<gameMove> moves) {
@@ -416,14 +450,12 @@ vector<gameMove> ChessAI::generateKingMoves(piece king) {
 
 
 
-void ChessAI::makeMove(gameMove m) {
-	char movedPiece = gameBoard[m.x1][m.y1];
-	char removedPiece = gameBoard[m.x2][m.y2];
-	gameBoard[m.x1][m.y1] = '\0';
-	gameBoard[m.x2][m.y2] = m.pieceType;
-	printGameboard(gameBoard);
-	gameBoard[m.x1][m.y1] = movedPiece;
-	gameBoard[m.x2][m.y2] = removedPiece;
+array<array<char, 8>, 8> ChessAI::makeMove(gameMove m, array<array<char, 8>, 8> gameBoard) {
+	array<array<char, 8>, 8> newGameBoard = gameBoard;
+	newGameBoard[m.x1][m.y1] = '\0';
+	newGameBoard[m.x2][m.y2] = m.pieceType;
+	printGameboard(newGameBoard);
+	return newGameBoard;
 }
 // vector<array<array<int, 8>, 8>> validKnightMoves(array<array<int, 8>, 8> gameBoard, Coord position) {
 // 	vector<array<array<int, 8>, 8>> newGameBoards;
@@ -480,14 +512,14 @@ int main() {
  // 	cin >> option;
 
 	ChessAI cai = ChessAI("http://localhost:3000/");
-	gameMove gm = cai.chooseMove();
-	while (true) {
-		int move;
-		cout << "Make a move? ";
-		cin >> move;
-		if (move == 1) {
-			cai.chooseMove();
-		}
-	}
+	// gameMove gm = cai.chooseMove();
+	// while (true) {
+	// 	int move;
+	// 	cout << "Make a move? ";
+	// 	cin >> move;
+	// 	if (move == 1) {
+	// 		cai.chooseMove();
+	// 	}
+	// }
 	//cai->egm.sendMove(//)
 }
