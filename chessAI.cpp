@@ -122,6 +122,7 @@ double ChessAI::generateMoveTree(array<array<char, 8>, 8> board, treeNode* paren
 		recursionDepth++;
 
 		vector<gameMove> gm = generateMoves(pieces, board);
+		gm = pruneBadMoves(gm);
 		
 		for (int i = 0; i < gm.size(); i++) {
 			array<array<char, 8>, 8> newGameBoard = makeMove(gm[i], board);
@@ -266,7 +267,7 @@ bool ChessAI::moveBadState(gameMove m) {
 	int kingY = moveColor == color ? myKing->y : opponentKing->y;
 	if (inCheck(kingX, kingY, tempGameboard, moveColor))
 		return true;
-	printGameboard(tempGameboard);
+	//printGameboard(tempGameboard);
 	return false;
 }
 
