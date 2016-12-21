@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <random>
+#include <climits>
 #include "ChessAI.h"
 
 
@@ -15,26 +16,26 @@ ChessAI::ChessAI(string endpointUrl) {
 	getPieces(gameBoard);
 	recursionDepth = 0;
 
-	gameMove emptyMove;
-	vector<treeNode*> children;
-	treeNode* root = new treeNode(children, emptyMove, 0, gameBoard); 
-	generateMoveTree(gameBoard, root);
-	cout << root->children[0]->children.size() << endl;
+	// gameMove emptyMove;
+	// vector<treeNode*> children;
+	// treeNode* root = new treeNode(children, emptyMove, 0, gameBoard); 
+	// generateMoveTree(gameBoard, root);
+	// cout << root->children[0]->children.size() << endl;
 
-	while (true){
-		printGameboard(root->gameBoard);
-		cout << root->children.size() << endl;
-		if (root->children.size() != 0){
-			random_device rd; // obtain a random number from hardware
-	    	mt19937 eng(rd()); // seed the generator
-	    	uniform_int_distribution<> distr(0, root->children.size()); // define the range
-			root = root->children[distr(eng)];
-		}
-		else {
-			cout << "BREAKING BAD" << endl;
-			break;
-		}
-	}
+	// while (true){
+	// 	printGameboard(root->gameBoard);
+	// 	cout << root->children.size() << endl;
+	// 	if (root->children.size() != 0){
+	// 		random_device rd; // obtain a random number from hardware
+	//     	mt19937 eng(rd()); // seed the generator
+	//     	uniform_int_distribution<> distr(0, root->children.size()); // define the range
+	// 		root = root->children[distr(eng)];
+	// 	}
+	// 	else {
+	// 		cout << "BREAKING BAD" << endl;
+	// 		break;
+	// 	}
+	// }
 	//printGameboard(root->children[0]->children[0]->children[0]->gameBoard);
 	// gameBoard[0][3] = '\0';
 	// gameBoard[2][4] = 'k';
@@ -93,42 +94,62 @@ gameMove ChessAI::chooseMove() {
     mt19937 eng(rd()); // seed the generator
     uniform_int_distribution<> distr(0, gm.size()); // define the range
 
-	for (int i = 0; i < gm.size(); i++) {
-		if (gm[i].value > maxValue) {
-			maxValue = gm[i].value;
-			index = i;
-		}
-	}
-	if (index == -1) {
-		index = distr(eng);
-	}
+	 gameMove emptyMove;
+	vector<treeNode*> children;
+	treeNode* root = new treeNode(children, emptyMove, 0, gameBoard); 
+	int bestValue = (int) generateMoveTree(gameBoard, root);
 
 	gameBoard = egm->getGameBoard();
 	getPieces(gameBoard);
 	
-	egm->sendMove(gm[index]);	
-	makeMove(gm[index], gameBoard);
-	return gm[index];
+	egm->sendMove(root->children[bestValue]->gm);	
+	//makeMove(gm[index], gameBoard);
+	return root->children[bestValue]->gm;
 }
 
-treeNode* ChessAI::generateMoveTree(array<array<char, 8>, 8> board, treeNode* parent){
+double ChessAI::generateMoveTree(array<array<char, 8>, 8> board, treeNode* parent){
 	getPieces(board);
+	bool returnIndex = false;
+	double bestValue = INT_MAX;
+	int bestValueIndex = 0;
+
+	if (recursionDepth == 0) {
+		returnIndex = true;
+	}
 	int preserveRecursionDepth = recursionDepth;
-	if (recursionDepth < 5){
+	if (recursionDepth < 4){
 		vector<piece> pieces = recursionDepth % 2 == 0 ? myPieces : opponentPieces;
 		recursionDepth++;
+
 		vector<gameMove> gm = generateMoves(pieces, board);
+		
 		for (int i = 0; i < gm.size(); i++) {
 			array<array<char, 8>, 8> newGameBoard = makeMove(gm[i], board);
 			
 			vector<treeNode*> children;
 			treeNode* child = new treeNode(children, gm[i], gm[i].value, newGameBoard);
 			parent->children.push_back(child);
-			generateMoveTree(newGameBoard, child);
+			double childValue = generateMoveTree(newGameBoard, child);
+			if (recursionDepth % 2 == 0 && bestValue > childValue || bestValue == INT_MAX) {
+				bestValue = childValue;
+				bestValueIndex = i;
+			}
+			if (recursionDepth % 2 != 0 && bestValue < childValue || bestValue == INT_MAX) {
+				bestValue = childValue;
+				bestValueIndex = i;
+			}
 		}
 	}
+	else {
+		return stateValue;
+	}
 	recursionDepth = preserveRecursionDepth;
-	return parent;
+	
+	if (returnIndex) {
+		return bestValueIndex;
+	}
+	
+	return bestValue;
 }
 
 vector<gameMove> ChessAI::pruneBadMoves(vector<gameMove> moves) {
@@ -146,37 +167,43 @@ vector<gameMove> ChessAI::pruneBadMoves(vector<gameMove> moves) {
 
 
 void ChessAI::getPieces(array<array<char, 8>, 8> board) {
+	stateValue = 0;
 	myPieces.clear();
 	opponentPieces.clear();
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			if (isupper(board[i][j])) {
-				piece newPiece = piece(i, j, board[i][j]);
+			char p = board[i][j];
+			if (isupper(p)) {
+				piece newPiece = piece(i, j, p);
 				if (color == WHITE) {
 					if (newPiece.pieceType == 'K'){
-						this->myKing = new piece(i, j, board[i][j]);
+						this->myKing = new piece(i, j, p);
 					}
 					myPieces.push_back(newPiece);
+					stateValue += valueGained(p);
 				}
 				else{
 					if (newPiece.pieceType == 'K'){
-						this->opponentKing = new piece(i, j, board[i][j]);
+						this->opponentKing = new piece(i, j, p);
 					}
 					opponentPieces.push_back(newPiece);
+					stateValue -= valueGained(p);
 				}
 			}
-			else if (islower(board[i][j])) {
-				piece newPiece = piece(i, j, board[i][j]);
+			else if (islower(p)) {
+				piece newPiece = piece(i, j, p);
 				if (color == BLACK){
 					if (newPiece.pieceType == 'k'){
-						this->myKing = new piece(i, j, board[i][j]);
+						this->myKing = new piece(i, j, p);
 					}
 					myPieces.push_back(newPiece);
+					stateValue += valueGained(p);
 				}
 				else{
 					if (newPiece.pieceType == 'k'){
-						this->opponentKing = new piece(i, j, board[i][j]);
+						this->opponentKing = new piece(i, j, p);
 					}
+					stateValue -= valueGained(p);
 					opponentPieces.push_back(newPiece);
 				}
 			}
@@ -520,14 +547,13 @@ int main() {
  // 	cin >> option;
 
 	ChessAI cai = ChessAI("http://localhost:3000/");
-	// gameMove gm = cai.chooseMove();
-	// while (true) {
-	// 	int move;
-	// 	cout << "Make a move? ";
-	// 	cin >> move;
-	// 	if (move == 1) {
-	// 		cai.chooseMove();
-	// 	}
-	// }
-	//cai->egm.sendMove(//)
+	gameMove gm = cai.chooseMove();
+	while (true) {
+		int move;
+		cout << "Make a move? ";
+		cin >> move;
+		if (move == 1) {
+			cai.chooseMove();
+		}
+	}
 }

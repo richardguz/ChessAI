@@ -49,6 +49,8 @@ struct treeNode{
 	: children(children), value(value), gm(gm), gameBoard(gameBoard) {}
 	std::vector<treeNode*> children;
 	int value;
+	int min;
+	int max;
 	gameMove gm;
 	std::array<std::array<char, 8>, 8> gameBoard;
 };
