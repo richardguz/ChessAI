@@ -171,6 +171,13 @@ void ChessAI::getPieces(array<array<char, 8>, 8> board) {
 	stateValue = 0;
 	myPieces.clear();
 	opponentPieces.clear();
+	if (this->myKing != NULL) {
+		delete this->myKing;
+	}
+	if (this->opponentKing != NULL){
+		delete this->opponentKing;
+	}
+
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
 			char p = board[i][j];
@@ -474,7 +481,7 @@ vector<gameMove> ChessAI::generateKingMoves(piece king, array<array<char, 8>, 8>
 			int newX = oldX + i;
 			int newY = oldY + j;
 			piece oppositeKing = kingColor == color ? *opponentKing : *myKing;
-			if (!isBlocked(newX, newY, king.pieceType, board) && !inCheck(newX, newY, board, kingColor) && !kingsKissing(newX, newY, oppositeKing)) {
+			if (!isBlocked(newX, newY, king.pieceType, board) && !outOfBounds(newX, newY) && !kingsKissing(newX, newY, oppositeKing)) {
 				double value = valueGained(gameBoard[newX][newY]);
 				moves.push_back(gameMove(oldX, oldY, newX, newY, king.pieceType, value));
 			}
