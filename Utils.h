@@ -25,6 +25,7 @@ struct Coord{
 };
 
 struct piece{
+	piece() {}
 	piece(int x, int y, char pieceType) : x(x), y(y), pieceType(pieceType) {}
 	int x;
 	int y;

@@ -18,6 +18,7 @@ public:
 	std::string sendMove(gameMove move);
 
 	int getColor();
+	bool myTurn();
 
 private:
 	std::string baseUrl;
