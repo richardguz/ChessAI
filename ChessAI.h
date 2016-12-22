@@ -35,8 +35,10 @@ public:
 	double generateMoveTree(std::array<std::array<char, 8>, 8> board, treeNode* parent);
 
 
+
 	double valueGained(char p);
 	
+	void pollForTurn();
 	void getPieces(std::array<std::array<char, 8>, 8> board);
 	void getOpponentPieces();
 	std::array<std::array<char, 8>, 8> makeMove(gameMove m, std::array<std::array<char, 8>, 8> board);
@@ -49,8 +51,8 @@ private:
 	int color;
 	std::vector<piece> myPieces;
 	std::vector<piece> opponentPieces;
-	piece* myKing;
-	piece* opponentKing;
+	piece myKing;
+	piece opponentKing;
 	int recursionDepth;
 	int stateValue;
 };

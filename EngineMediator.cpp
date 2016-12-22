@@ -63,7 +63,9 @@ array<array<char, 8>, 8> EngineMediator::getGameBoard() {
 	array<array<char, 8>, 8> gameboard;
 	string response = makeHTTPRequest(getStateUrl.c_str(), "GET", "");
 	gameboard = parseGameBoard(response);
+	json game = json::parse(response);
 	this->gameboard = gameboard;
+	this->turn = game["turn"];
 	return gameboard;
 }
 
@@ -81,4 +83,8 @@ string EngineMediator::sendMove(gameMove move) {
 
 int EngineMediator::getColor(){
 	return color;
+}
+
+bool EngineMediator::myTurn() {
+	return turn;
 }
