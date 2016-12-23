@@ -17,6 +17,7 @@ ChessAI::ChessAI(string endpointUrl) {
 	color = egm->getColor();
 	
 	recursionDepth = 0;
+	turnNumber = 0;
 
 	// gameBoard[0] = {'r','\0','\0','k','\0','\0','\0','\0'};
 	// gameBoard[1] = {'p','\0','\0','\0','\0','p','\0','Q'};
@@ -71,6 +72,30 @@ ChessAI::ChessAI(string endpointUrl) {
 	// }
 }
 
+vector<gameMove> ChessAI::generateEarlyMoves(vector<piece> pieces, array<array<char, 8>, 8> board){
+	vector<gameMove> myMoves;
+	for (int i = 0; i < pieces.size(); i++) {
+		vector<gameMove> pieceMoves;
+		piece p = pieces[i];
+		switch(tolower(p.pieceType)) {
+			case 'p':
+				if (p.y > 2 && p.y < 5){
+					pieceMoves = generatePawnMoves(p, board);
+				}
+				break;
+			case 'b':
+				pieceMoves = generateBishopMoves(p, board);
+				break;
+			case 'n':
+				pieceMoves = generateKnightMoves(p, board);
+				break;
+		}
+		myMoves.insert(myMoves.end(), pieceMoves.begin(), pieceMoves.end());
+	}
+	
+	return myMoves;
+}
+
 vector<gameMove> ChessAI::generateMoves(vector<piece> pieces, array<array<char, 8>, 8> board) {
 	vector<gameMove> myMoves;
 	for (int i = 0; i < pieces.size(); i++) {
@@ -115,13 +140,13 @@ gameMove ChessAI::chooseMove() {
 		getPieces(gameBoard);
 		
 
-		 gameMove emptyMove;
+		gameMove emptyMove;
 		vector<treeNode*> children;
 		treeNode* root = new treeNode(children, emptyMove, 0, gameBoard); 
 		int bestValue = (int) generateMoveTree(gameBoard, root);
-		
 		egm->sendMove(root->children[bestValue]->gm);	
-		//makeMove(gm[index], gameBoard);
+		turnNumber+= 1;
+		printGameboard(makeMove(root->children[bestValue]->gm, gameBoard));
 		return root->children[bestValue]->gm;
 	}
 }
@@ -132,17 +157,31 @@ double ChessAI::generateMoveTree(array<array<char, 8>, 8> board, treeNode* paren
 	double bestValue = INT_MAX;
 	int bestValueIndex = 0;
 	int randIndex = 0;
+	int offset = 0;
 
 	if (recursionDepth == 0) {
 		returnIndex = true;
 	}
 	int preserveRecursionDepth = recursionDepth;
 	if (recursionDepth < 4){
+		int turnColor = recursionDepth % 2 == 0 ? WHITE : BLACK;
+		bool opponentMove = turnColor != color;
 		vector<piece> pieces = recursionDepth % 2 == 0 ? myPieces : opponentPieces;
 		recursionDepth++;
 
-		vector<gameMove> gm = generateMoves(pieces, board);
-		gm = pruneBadMoves(gm);
+		vector<gameMove> gm;
+		if (turnNumber < 3) {
+			gm = generateEarlyMoves(pieces, board);
+		}
+		else {
+			gm = generateMoves(pieces, board);
+		}
+		if (recursionDepth <= 2) {
+			if (inCheck(myKing.x, myKing.y, board, turnColor)){
+				offset == -2;
+				gm = pruneBadMoves(gm);
+			}
+		}
 		
 		random_device rd; // obtain a random number from hardware
 		mt19937 eng(rd()); // seed the generator
@@ -156,13 +195,18 @@ double ChessAI::generateMoveTree(array<array<char, 8>, 8> board, treeNode* paren
 			treeNode* child = new treeNode(children, gm[i], gm[i].value, newGameBoard);
 			parent->children.push_back(child);
 			double childValue = generateMoveTree(newGameBoard, child);
-			if (recursionDepth % 2 == 0 && bestValue > childValue || bestValue == INT_MAX) {
-				bestValue = childValue;
-				bestValueIndex = i;
+			child->value = childValue;
+			if (opponentMove && bestValue > childValue || bestValue == INT_MAX) {
+				if (!moveBadState(gm[i], newGameBoard)){
+					bestValue = childValue;
+					bestValueIndex = i;
+				}
 			}
-			if (recursionDepth % 2 != 0 && bestValue < childValue || bestValue == INT_MAX) {
-				bestValue = childValue;
-				bestValueIndex = i;
+			if (!opponentMove && bestValue < childValue || bestValue == INT_MAX) {
+				if (!moveBadState(gm[i], newGameBoard)){
+					bestValue = childValue;
+					bestValueIndex = i;
+				}
 			}
 			if (recursionDepth > 1) {
 				delete child;
@@ -171,24 +215,31 @@ double ChessAI::generateMoveTree(array<array<char, 8>, 8> board, treeNode* paren
 		}
 	}
 	else {
+		recursionDepth = preserveRecursionDepth;
 		return stateValue;
 	}
 	recursionDepth = preserveRecursionDepth;
 	
 	if (returnIndex) {
+		for (int i = 0; i < parent->children.size(); i++) {
+			if (parent->children[i]->value > bestValue) {
+				bestValue = parent->children[i]->value;
+				bestValueIndex = i;
+			}
+		}
 		cout << bestValue << endl;
 		if (bestValue == 0)
 			return randIndex;
 		return bestValueIndex;
 	}
 	
-	return bestValue;
+	return bestValue + offset;
 }
 
 vector<gameMove> ChessAI::pruneBadMoves(vector<gameMove> moves) {
 	int i = 0;
 	while (i < moves.size()) {
-		if (moveBadState(moves[i])) {
+		if (moveBadState(moves[i], gameBoard)) {
 			moves.erase(moves.begin() + i);
 		}
 		else {
@@ -249,6 +300,11 @@ void ChessAI::getPieces(array<array<char, 8>, 8> board) {
 			}
 		}
 	}
+	// if (recursionDepth < 2) {
+	// 	if (inCheck(myKing.x, myKing.y, board, color)) {
+	// 	stateValue -= 2;
+	// 	}
+	// }
 }
 
 bool ChessAI::pawnMoved(piece pawn) {
@@ -296,8 +352,8 @@ bool ChessAI::kingsKissing(int x, int y, piece oppositeKing) {
 	return false;
 }
 
-bool ChessAI::moveBadState(gameMove m) {
-	array<array<char, 8>, 8> tempGameboard = gameBoard;
+bool ChessAI::moveBadState(gameMove m, array<array<char, 8>, 8> board) {
+	array<array<char, 8>, 8> tempGameboard = board;
 	tempGameboard[m.x1][m.y1] = '\0';
 	tempGameboard[m.x2][m.y2] = m.pieceType;
 	getPieces(tempGameboard);

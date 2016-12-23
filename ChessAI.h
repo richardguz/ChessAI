@@ -20,6 +20,7 @@ public:
 	std::vector<gameMove> generateKingMoves(piece king, std::array<std::array<char, 8>, 8> board);
 
 	std::vector<gameMove> generateMoves(std::vector<piece> pieces, std::array<std::array<char, 8>, 8> board);
+	std::vector<gameMove> generateEarlyMoves(std::vector<piece> pieces, std::array<std::array<char, 8>, 8> board);
 	std::vector<gameMove> pruneBadMoves(std::vector<gameMove> moves);
 
 	
@@ -30,7 +31,7 @@ public:
 	bool isBlocked(int x, int y, char pieceType, std::array<std::array<char, 8>, 8> board);
 	bool outOfBounds(int x, int y);
 	bool inCheck(int x, int y, std::array<std::array<char, 8>, 8> board, int kingColor);
-	bool moveBadState(gameMove m);
+	bool moveBadState(gameMove m, std::array<std::array<char, 8>, 8> board);
 	bool kingsKissing(int x, int y, piece oppositeKing);
 	double generateMoveTree(std::array<std::array<char, 8>, 8> board, treeNode* parent);
 
@@ -55,6 +56,7 @@ private:
 	piece opponentKing;
 	int recursionDepth;
 	int stateValue;
+	int turnNumber;
 };
 
 #endif //CHESS_AI_H
