@@ -142,12 +142,81 @@ gameMove ChessAI::chooseMove() {
 
 		gameMove emptyMove;
 		vector<treeNode*> children;
-		treeNode* root = new treeNode(children, emptyMove, 0, gameBoard); 
-		int bestValue = (int) generateMoveTree(gameBoard, root);
-		egm->sendMove(root->children[bestValue]->gm);	
+		//treeNode* root = new treeNode(children, emptyMove, 0, gameBoard); 
+		//int bestValue = (int) generateMoveTree(gameBoard, root);
+		gameMove gm = MinMax(emptyMove, gameBoard, 4);
+		cout << gm.value << endl;
+		egm->sendMove(gm);	
 		turnNumber+= 1;
-		printGameboard(makeMove(root->children[bestValue]->gm, gameBoard));
-		return root->children[bestValue]->gm;
+		printGameboard(makeMove(gm, gameBoard));
+		return gm;
+	}
+}
+
+gameMove ChessAI::MinMax(gameMove move, array<array<char, 8>, 8> board, short int depth_limit) {
+	return MaxMove(move, board, depth_limit, 0);
+}
+
+gameMove ChessAI::MaxMove(gameMove lastMove, array<array<char, 8>, 8> board, short int depth_limit, short int depth) {
+	vector<gameMove> moves;
+	gameMove best_real_move;
+	gameMove best_move;
+	gameMove move;
+	bool firstMove = true;
+
+	getPieces(board);
+	if (depth >= depth_limit) {//if depth limit is reached
+		lastMove.value = stateValue;
+		return lastMove;
+	} else {
+		vector<piece> pieces = depth % 2 == 0 ? myPieces : opponentPieces;
+		if (turnNumber < 3 && depth == 0) {
+			moves = generateEarlyMoves(pieces, board);
+		}
+		else {
+			moves = generateMoves(pieces, board);
+		}
+		for (int i = 0; i < moves.size(); i++) {
+			array<array<char, 8>, 8> newGameBoard = makeMove(moves[i], board);
+			move = MinMove(moves[i], newGameBoard, depth_limit, depth+1);
+			if (firstMove || move.value
+					> best_move.value) {
+				firstMove = false;
+				best_move = move;
+				best_real_move = moves[i];
+				best_real_move.value = move.value;
+			}
+		}
+		return best_real_move;
+	}
+}
+
+gameMove ChessAI::MinMove(gameMove lastMove, array<array<char, 8>, 8> board, short int depth_limit, short int depth) {
+	vector<gameMove> moves;
+	gameMove best_real_move;
+	gameMove best_move;
+	gameMove move;
+	bool firstMove = true;
+
+	getPieces(board);
+	if (depth >= depth_limit) {//if depth limit is reached
+		lastMove.value = stateValue;
+		return lastMove;
+	} else {
+		vector<piece> pieces = depth % 2 == 0 ? myPieces : opponentPieces;
+		moves = generateMoves(pieces, board);
+		for (int i = 0; i < moves.size(); i++) {
+			array<array<char, 8>, 8> newGameBoard = makeMove(moves[i], board);
+			move = MaxMove(moves[i], newGameBoard, depth_limit, depth+1);
+			if (firstMove || move.value
+					< best_move.value) {
+				firstMove = false;
+				best_move = move;
+				best_real_move = moves[i];
+				best_real_move.value = move.value;
+			}
+		}
+		return best_real_move;
 	}
 }
 
