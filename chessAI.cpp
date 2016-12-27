@@ -181,10 +181,12 @@ gameMove ChessAI::MaxMove(gameMove lastMove, array<array<char, 8>, 8> board, sho
 			move = MinMove(moves[i], newGameBoard, depth_limit, depth+1);
 			if (firstMove || move.value
 					> best_move.value) {
-				firstMove = false;
-				best_move = move;
-				best_real_move = moves[i];
-				best_real_move.value = move.value;
+				if (!moveBadState(moves[i], board)){
+					firstMove = false;
+					best_move = move;
+					best_real_move = moves[i];
+					best_real_move.value = move.value;
+				}
 			}
 		}
 		return best_real_move;
@@ -210,10 +212,12 @@ gameMove ChessAI::MinMove(gameMove lastMove, array<array<char, 8>, 8> board, sho
 			move = MaxMove(moves[i], newGameBoard, depth_limit, depth+1);
 			if (firstMove || move.value
 					< best_move.value) {
-				firstMove = false;
-				best_move = move;
-				best_real_move = moves[i];
-				best_real_move.value = move.value;
+				if (!moveBadState(moves[i], board)) {
+					firstMove = false;
+					best_move = move;
+					best_real_move = moves[i];
+					best_real_move.value = move.value;
+				}
 			}
 		}
 		return best_real_move;
