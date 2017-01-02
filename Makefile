@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS= -std=c++11
-LIBS= -L/usr/local/lib -lcurl -lcurlpp -I/usr/local/include
+LIBS= -L/usr/local/lib -lcurl -I/usr/local/include
 
 
 
