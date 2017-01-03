@@ -154,10 +154,10 @@ gameMove ChessAI::chooseMove() {
 }
 
 gameMove ChessAI::MinMax(gameMove move, array<array<char, 8>, 8> board, short int depth_limit) {
-	return MaxMove(move, board, depth_limit, 0);
+	return MaxMove(move, board, depth_limit, 0, INT_MIN, INT_MAX);
 }
 
-gameMove ChessAI::MaxMove(gameMove lastMove, array<array<char, 8>, 8> board, short int depth_limit, short int depth) {
+gameMove ChessAI::MaxMove(gameMove lastMove, array<array<char, 8>, 8> board, short int depth_limit, short int depth, int alpha, int beta) {
 	vector<gameMove> moves;
 	gameMove best_real_move;
 	gameMove best_move;
@@ -178,25 +178,30 @@ gameMove ChessAI::MaxMove(gameMove lastMove, array<array<char, 8>, 8> board, sho
 		}
 		for (int i = 0; i < moves.size(); i++) {
 			array<array<char, 8>, 8> newGameBoard = makeMove(moves[i], board);
-			move = MinMove(moves[i], newGameBoard, depth_limit, depth+1);
-			if (firstMove || move.value
-					> best_move.value) {
+			move = MinMove(moves[i], newGameBoard, depth_limit, depth+1, alpha, beta);
+			if (move.value >= beta) {
 				if (!moveBadState(moves[i], board)){
+					best_real_move.value = beta;
+					return best_real_move;
+				}
+			}
+			if (move.value > alpha) {
+				if (!moveBadState(moves[i], board)) {
 					firstMove = false;
-					best_move = move;
+					alpha = move.value;
 					best_real_move = moves[i];
 					best_real_move.value = move.value;
 				}
 			}
 		}
-		if (moves.size() == 0) {
-			best_real_move.value = -1000;
-		}
+		// if (false) {
+		// 	best_real_move.value = -1000;
+		// }
 		return best_real_move;
 	}
 }
 
-gameMove ChessAI::MinMove(gameMove lastMove, array<array<char, 8>, 8> board, short int depth_limit, short int depth) {
+gameMove ChessAI::MinMove(gameMove lastMove, array<array<char, 8>, 8> board, short int depth_limit, short int depth, int alpha, int beta) {
 	vector<gameMove> moves;
 	gameMove best_real_move;
 	gameMove best_move;
@@ -212,20 +217,26 @@ gameMove ChessAI::MinMove(gameMove lastMove, array<array<char, 8>, 8> board, sho
 		moves = generateMoves(pieces, board);
 		for (int i = 0; i < moves.size(); i++) {
 			array<array<char, 8>, 8> newGameBoard = makeMove(moves[i], board);
-			move = MaxMove(moves[i], newGameBoard, depth_limit, depth+1);
-			if (firstMove || move.value
-					< best_move.value) {
+			move = MinMove(moves[i], newGameBoard, depth_limit, depth+1, alpha, beta);
+			if (move.value <= alpha) {
+				if (!moveBadState(moves[i], board)){
+					best_real_move = moves[i];
+					best_real_move.value = alpha;
+					return best_real_move;
+				}
+			}
+			if (move.value < beta) {
 				if (!moveBadState(moves[i], board)) {
 					firstMove = false;
-					best_move = move;
+					beta = move.value;
 					best_real_move = moves[i];
 					best_real_move.value = move.value;
 				}
 			}
 		}
-		if (moves.size() == 0) {
-			best_real_move.value = 1000;
-		}
+		// if (false) {
+		// 	best_real_move.value = -1000;
+		// }
 		return best_real_move;
 	}
 }

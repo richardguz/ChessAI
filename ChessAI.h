@@ -48,8 +48,8 @@ public:
 
 
 	gameMove MinMax(gameMove move, std::array<std::array<char, 8>, 8> board, short int depth_limit);
-	gameMove MaxMove(gameMove move, std::array<std::array<char, 8>, 8> board, short int depth_limit, short int depth);
-	gameMove MinMove(gameMove move, std::array<std::array<char, 8>, 8> board, short int depth_limit, short int depth);
+	gameMove MaxMove(gameMove move, std::array<std::array<char, 8>, 8> board, short int depth_limit, short int depth, int alpha, int beta);
+	gameMove MinMove(gameMove move, std::array<std::array<char, 8>, 8> board, short int depth_limit, short int depth, int alpha, int beta);
 
 private: 
 	EngineMediator* egm;
