@@ -189,7 +189,7 @@ gameMove ChessAI::MaxMove(gameMove lastMove, array<array<char, 8>, 8> board, sho
 				}
 			}
 		}
-		if (moves.size() == 0) {
+		if (firstMove) {
 			best_real_move.value = -1000;
 		}
 		return best_real_move;
@@ -223,7 +223,7 @@ gameMove ChessAI::MinMove(gameMove lastMove, array<array<char, 8>, 8> board, sho
 				}
 			}
 		}
-		if (moves.size() == 0) {
+		if (firstMove) {
 			best_real_move.value = 1000;
 		}
 		return best_real_move;
