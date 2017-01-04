@@ -5,6 +5,7 @@
 #include <climits>
 #include <chrono>
 #include <thread> 
+#include <algorithm>
 #include "ChessAI.h"
 
 
@@ -189,7 +190,7 @@ gameMove ChessAI::MaxMove(gameMove lastMove, array<array<char, 8>, 8> board, sho
 				}
 			}
 		}
-		if (firstMove) {
+		if (firstMove && inCheck(myKing.x, myKing.y, board, color)) {
 			best_real_move.value = -1000;
 		}
 		return best_real_move;
@@ -223,7 +224,7 @@ gameMove ChessAI::MinMove(gameMove lastMove, array<array<char, 8>, 8> board, sho
 				}
 			}
 		}
-		if (firstMove) {
+		if (firstMove && inCheck(opponentKing.x, opponentKing.y, board, !color)) {
 			best_real_move.value = 1000;
 		}
 		return best_real_move;

@@ -1,1 +1,4 @@
-When the AI is checking for moves,if it finds a move that will put its opponent in check it will not take into account moves that capture the checking piece, hence putting itself in a great vunerability. 
+When the AI is checking for moves,if it finds a move that will put its opponent in check it will not take 
+into account moves that capture the checking piece, hence putting itself in a great vunerability. 
+
+The AI currently assumes a stalemate to equal a checkmate, this needs to change
