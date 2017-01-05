@@ -179,6 +179,13 @@ gameMove ChessAI::MaxMove(gameMove lastMove, array<array<char, 8>, 8> board, sho
 		for (int i = 0; i < moves.size(); i++) {
 			array<array<char, 8>, 8> newGameBoard = makeMove(moves[i], board);
 			move = MinMove(moves[i], newGameBoard, depth_limit, depth+1, alpha, beta);
+			if (firstMove || (best_real_move.value < move.value)) {
+               if (!moveBadState(moves[i], board)){
+               		firstMove = false;
+					best_real_move = moves[i];
+					best_real_move.value = move.value;
+				}
+            }
 			if (move.value >= beta) {
 				if (!moveBadState(moves[i], board)){
 					best_real_move.value = beta;
@@ -218,7 +225,14 @@ gameMove ChessAI::MinMove(gameMove lastMove, array<array<char, 8>, 8> board, sho
 		for (int i = 0; i < moves.size(); i++) {
 			array<array<char, 8>, 8> newGameBoard = makeMove(moves[i], board);
 			move = MinMove(moves[i], newGameBoard, depth_limit, depth+1, alpha, beta);
-			if (move.value <= alpha) {
+			if (firstMove || (best_real_move.value > move.value)) {
+               if (!moveBadState(moves[i], board)){
+               		firstMove = false;
+					best_real_move = moves[i];
+					best_real_move.value = move.value;
+				}
+            }
+            if (beta <= alpha) {
 				if (!moveBadState(moves[i], board)){
 					best_real_move = moves[i];
 					best_real_move.value = alpha;
